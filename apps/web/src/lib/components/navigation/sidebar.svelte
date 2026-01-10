@@ -66,8 +66,8 @@
 						>
 					</Alert.Description>
 				</Alert.Root>
-				-->
-				<SidebarAd />
+			-->
+				<!-- <SidebarAd /> -->
 			</div>
 		</Sidebar.Group>
 	</Sidebar.Content>
