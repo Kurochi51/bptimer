@@ -103,7 +103,7 @@ jobs:
           echo "LIB=$sdkDir\Lib\x64;$env:LIB" >> $env:GITHUB_ENV
           echo "INCLUDE=$sdkDir\Include;$env:INCLUDE" >> $env:GITHUB_ENV
 
-      - name: Build release binary
+      - name: Build binary
         working-directory: apps/desktop
         run: cargo build
 
@@ -139,12 +139,12 @@ jobs:
             exit 1
           }
 
-      - name: Rename release binary
+      - name: Rename binary
         id: rename_binary
         working-directory: apps/desktop
         run: |
           $exeName = "bptimer-desktop-x86_64-pc-windows-msvc.exe"
-          Copy-Item "target\release\bptimer-desktop.exe" $exeName
+          Copy-Item "target\debug\bptimer-desktop.exe" $exeName
           echo "exe_name=$exeName" >> $env:GITHUB_OUTPUT
           echo "Created: $exeName"
 
