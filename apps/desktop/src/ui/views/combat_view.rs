@@ -89,7 +89,7 @@ pub fn footer_height(ui: &Ui) -> f32 {
     (spacing::XS * 2.0) + spacing + text_height
 }
 
-fn calculate_dps_window_seconds(
+pub(crate) fn calculate_dps_window_seconds(
     player_stats: &std::collections::HashMap<i64, PlayerStats>,
     settings: &Settings,
 ) -> Option<f32> {

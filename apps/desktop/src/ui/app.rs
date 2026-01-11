@@ -600,6 +600,7 @@ impl eframe::App for DpsMeterApp {
                 &mut self.dps_value,
                 &mut self.max_dps,
                 &mut self.dps_history,
+                &mut self.settings,
             );
         }
 
