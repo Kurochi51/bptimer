@@ -107,38 +107,6 @@ jobs:
         working-directory: apps/desktop
         run: cargo build
 
-      - name: Install Inno Setup
-        run: |
-          $isPath = "C:\Program Files (x86)\Inno Setup 6"
-          if (-not (Test-Path $isPath)) {
-            Write-Host "Installing Inno Setup..."
-            $installerUrl = "https://jrsoftware.org/download.php/is.exe"
-            $installerPath = "$env:TEMP\is.exe"
-            Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
-            Start-Process -FilePath $installerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES" -Wait
-          }
-          echo "$isPath\ISCC.exe" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-      - name: Download Npcap installer
-        working-directory: apps/desktop
-        run: |
-          $npcapUrl = "${{ env.NPCAP_INSTALLER_URL }}"
-          $npcapPath = "npcap-installer.exe"
-          Write-Host "Downloading Npcap from $npcapUrl"
-          Invoke-WebRequest -Uri $npcapUrl -OutFile $npcapPath
-
-      - name: Compile installer
-        working-directory: apps/desktop
-        run: |
-          $version = "${{ steps.get_version.outputs.version }}"
-          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          Write-Host "Compiling installer with version: $version"
-          & $iscc installer.iss /DAppVersion=$version
-          if (-not $LASTEXITCODE -eq 0) {
-            Write-Error "Inno Setup compilation failed"
-            exit 1
-          }
-
       - name: Rename binary
         id: rename_binary
         working-directory: apps/desktop
@@ -148,14 +116,14 @@ jobs:
           echo "exe_name=$exeName" >> $env:GITHUB_OUTPUT
           echo "Created: $exeName"
 
-      - name: Get installer name
-        id: get_installer_name
+      - name: Create debug ZIP
+        id: zip
         working-directory: apps/desktop
         run: |
           $version = "${{ steps.get_version.outputs.version }}"
-          $installerName = "BPTimer-Desktop-Setup-$version.exe"
-          echo "installer_name=$installerName" >> $env:GITHUB_OUTPUT
-          echo "Installer will be: $installerName"
+          $zipName = "bptimer-desktop-debug-$version.zip"
+          Compress-Archive -Path "target\debug\*" -DestinationPath $zipName -Force
+          echo "zip_name=$zipName" >> $env:GITHUB_OUTPUT
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
@@ -163,7 +131,7 @@ jobs:
           name: windows-artifacts
           path: |
             apps/desktop/${{ steps.rename_binary.outputs.exe_name }}
-            apps/desktop/Output/${{ steps.get_installer_name.outputs.installer_name }}
+            apps/desktop/${{ steps.zip.outputs.zip_name }}
 
   release:
     runs-on: ubuntu-latest
@@ -198,6 +166,6 @@ jobs:
             
           files: |
             artifacts/windows/${{ needs.build-windows.outputs.exe_name }}
-            artifacts/windows/Output/${{ needs.build-windows.outputs.installer_name }}
+            artifacts/windows/${{ needs.build-windows.outputs.zip_name }}
           draft: false
           prerelease: false
